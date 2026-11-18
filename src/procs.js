@@ -51,7 +51,8 @@ export function spawnCmd(cmd, cwd, logFile, extraEnv = {}) {
     windowsHide: true,
     detached: !IS_WIN,
     stdio: ['ignore', fd, fd],
-    env: { ...process.env, BROWSER: 'none', FORCE_COLOR: '0', NO_COLOR: '1', CI: process.env.CI || '', ...extraEnv },
+    // PYTHONUNBUFFERED: python servers print their URL at once, so the hub can detect the port.
+    env: { ...process.env, BROWSER: 'none', FORCE_COLOR: '0', NO_COLOR: '1', PYTHONUNBUFFERED: '1', CI: process.env.CI || '', ...extraEnv },
   });
   fs.closeSync(fd);
   child.unref();
