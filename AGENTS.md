@@ -30,6 +30,6 @@ Run `preview hub status` (or `node bin/preview.js hub status` if the command is 
 - Secrets (passcode, session key, tunnel token, MCP token hashes) live in `~/.preview-hub/config.json`. Never copy them into this repo, a commit, or chat output. Ask the person to run token commands themselves.
 - Port 7421 is trusted because it binds 127.0.0.1 only. Never expose it, tunnel it, or bind it elsewhere.
 - Anything reachable from the public port must stay behind the passcode or an MCP token. The `/_hub/mcp` remote path must keep its limits (no start commands, no secret or system folders).
-- Keep dependencies minimal: the hub uses only Node built-ins plus `axi-sdk-js` for the CLI.
+- Keep dependencies minimal: the hub uses only Node built-ins; the CLI adds `axi-sdk-js` and `qrcode` (for `preview mcp token <name> --qr`).
 - After changing hub code, run `preview hub restart` and check `preview hub status`.
 - Test MCP changes over stdio (`node bin/preview-mcp.js`) and over HTTP (`http://127.0.0.1:7421/_hub/mcp`, or the public URL with a token).

@@ -69,7 +69,7 @@ preview stop <id> | start <id> | restart <id> | rm <id>
 preview edit <id> --ttl 7d --private true
 preview login-link                        # one-time dashboard login
 preview passcode [set <new>]
-preview mcp [token <bot> | revoke <bot>]
+preview mcp [token <bot> [--qr] | revoke <bot>]   # --qr: scan it with the phone app
 preview hub status | restart | logs | public-url <url> | tunnel <token-file>
 ```
 

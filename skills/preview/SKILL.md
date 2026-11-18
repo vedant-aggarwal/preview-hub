@@ -55,7 +55,7 @@ preview login-link         # one-time URL that logs the owner's browser into the
 
 ## MCP for bots
 
-- Cloud bots (Grok, claude.ai, ChatGPT connectors): `preview mcp token <bot-name>` prints a connector URL `<public-url>/_hub/mcp/<token>` once, and the user pastes it as a custom connector. `preview mcp revoke <bot-name>` cuts access. These bots get remote-safe tools.
+- Cloud bots (Grok, claude.ai, ChatGPT connectors): `preview mcp token <bot-name>` prints a connector URL `<public-url>/_hub/mcp/<token>` once, and the user pastes it as a custom connector. Add `--qr` for the phone app: it prints a QR in the terminal and saves a PNG to scan. `preview mcp revoke <bot-name>` cuts access. These bots get remote-safe tools.
 - Local agents that only speak MCP: `node <repo>/bin/preview-mcp.js` (stdio, full access).
 - Agents with a shell should use the CLI.
 

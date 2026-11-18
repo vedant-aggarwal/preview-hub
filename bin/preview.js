@@ -64,9 +64,10 @@ const HELP = {
   shot: 'usage: preview shot <id>\n  Refresh the dashboard screenshot (also refreshes the snapshot cache).',
   'login-link': 'usage: preview login-link [--ttl 24h]\n  One-time link that logs a browser into the dashboard for a year. Send it only to the owner.',
   passcode: 'usage: preview passcode | preview passcode set <new>\n  Show or change the dashboard passcode (changing logs out every browser).',
-  mcp: `usage: preview mcp [token <name> | revoke <name>]
+  mcp: `usage: preview mcp [token <name> [--qr] | revoke <name>]
   (none)          MCP endpoints, tokens, and the stdio command for local agents
   token <name>    create (or rotate) a token for a cloud bot, e.g. grok; prints its connector URL once
+    --qr          also show the URL as a QR code (terminal + PNG in the hub data folder) for the phone app's Scan QR code
   revoke <name>   delete a token; that bot loses access at once
   Cloud bots get remote-safe tools: no start commands, no secret or system folders.`,
   hub: `usage: preview hub [status|start|stop|restart|logs|install|public-url <url>|tunnel <token-file>]
@@ -245,7 +246,7 @@ async function cmdPasscode(args) {
 }
 
 async function cmdMcp(args) {
-  const o = parse(args, {}, 2, 'Run `preview mcp --help`');
+  const o = parse(args, { qr: 'bool' }, 2, 'Run `preview mcp --help`');
   const action = o._[0] || 'status';
   const stdio = `node ${path.join(ROOT, 'bin', 'preview-mcp.js')}`;
   if (action === 'status') {
@@ -262,11 +263,24 @@ async function cmdMcp(args) {
   if (action === 'token') {
     if (!o._[1]) throw usage('missing <name>', ['Run `preview mcp token grok`']);
     const r = await call('POST', 'mcp/tokens', { name: o._[1] });
-    return {
+    const out = {
       name: r.name, url: r.url, endpoint: r.endpoint, bearer_token: r.token,
       note: 'Shown once. Paste url as the connector URL, or use endpoint with header "Authorization: Bearer <bearer_token>".',
-      help: [`Run \`preview mcp revoke ${r.name}\` to cut access`, `Running this again rotates the token`],
     };
+    if (o.qr) {
+      const QR = (await import('qrcode')).default;
+      const dir = path.join(DATA, 'qr');
+      fs.mkdirSync(dir, { recursive: true });
+      const png = path.join(dir, `${r.name}.png`);
+      await QR.toFile(png, r.url, { width: 640, margin: 3, errorCorrectionLevel: 'M' });
+      out.qr_png = png;
+      // Terminal QR on stderr, so the structured output on stdout stays parseable for agents.
+      process.stderr.write(`\n${await QR.toString(r.url, { type: 'terminal', small: true, errorCorrectionLevel: 'L' })}\n`);
+      out.note = 'Shown once. Scan the QR (terminal above, or open qr_png) with the Previews app: Scan QR code. The PNG holds the token; delete it after scanning.';
+    }
+    if (!r.publicConfigured) out.warning = 'No public URL is set, so this link only works on this machine. Run `preview hub public-url <url>` first.';
+    out.help = [`Run \`preview mcp revoke ${r.name}\` to cut access`, `Running this again rotates the token`];
+    return out;
   }
   if (action === 'revoke') {
     if (!o._[1]) throw usage('missing <name>', ['Run `preview mcp` to see token names']);

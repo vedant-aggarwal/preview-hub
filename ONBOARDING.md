@@ -236,7 +236,7 @@ Cloud bots get remote-safe tools: they cannot run start commands, and they canno
 
 ## Step 7: phone app (optional)
 
-If the preview-hub iPhone app is available to them, it connects to any hub. In the app they add their hub URL (the public URL), log in with the passcode, and optionally paste a connector URL from `preview mcp token phone` for the native preview list.
+If the preview-hub iPhone app is available to them, it connects to any hub. In the app they add their hub URL (the public URL), log in with the passcode. For the native preview list, run `preview mcp token phone --qr` and scan the QR with the app's Scan QR code (it prints in the terminal and saves a PNG; delete the PNG after scanning).
 
 ## Step 8: security briefing (say this briefly)
 
