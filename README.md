@@ -109,6 +109,10 @@ CLI, stdio MCP ──> hub :7421 (127.0.0.1 only, trusted)
 
 Windows is the main tested platform (logon task, process control, PM2 and ngrok verified). macOS and Linux run the hub under PM2. On those systems, killing a hub-started server falls back to its process group.
 
+## Privacy
+
+See [PRIVACY.md](PRIVACY.md). The hub and the iPhone app send nothing to the developers.
+
 ## License
 
 MIT

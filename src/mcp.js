@@ -81,7 +81,7 @@ function toolDefs(remote) {
     {
       name: 'preview_list',
       title: 'List previews',
-      description: 'List previews with id, status (live, starting, down, stopped), name, target, url and time left. Running ones only unless all=true.',
+      description: 'List previews with id, status (live, starting, down, stopped), name, target, url, time left, privacy, whether it can be started, and a thumbnail URL (fetch it with the same token). Running ones only unless all=true.',
       inputSchema: { type: 'object', properties: { all: { type: 'boolean', description: 'Include stopped previews.' } }, additionalProperties: false },
       annotations: { title: 'List previews', readOnlyHint: true, openWorldHint: false },
     },
@@ -290,7 +290,15 @@ function makeHandlers({ call, remote, by }) {
       const hidden = a.all ? 0 : s.previews.length - list.length;
       const out = {
         total: list.length,
-        previews: list.map(p => ({ ...(p.status === 'stopped' ? stoppedRow(p) : row(p)), url: p.url })),
+        previews: list.map(p => ({
+          ...(p.status === 'stopped' ? stoppedRow(p) : row(p)),
+          url: p.url,
+          private: !!p.private,
+          can_start: !!p.canStart,
+          shot_at: p.shotAt || null,
+          // Dashboard screenshot; send the same MCP token as Authorization: Bearer (or ?key=) to fetch it.
+          thumbnail: p.shotAt ? `${new URL(p.url).origin}/_hub/shot/${p.id}.jpg` : null,
+        })),
       };
       if (hidden) out.stopped_hidden = hidden;
       return out;

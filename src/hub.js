@@ -1168,6 +1168,16 @@ function mcpInfo() {
   };
 }
 
+// The named MCP token matching a raw token string, or null. Bad non-empty tokens count toward the IP's rate limit.
+function mcpTokenFor(raw, ip) {
+  if (!raw) return null;
+  const h = hmac(cfg.secret, `mcp.${raw}`);
+  const tok = (cfg.mcpTokens || []).find(t => safeEqual(t.hash, h)) || null;
+  if (!tok) { const arr = loginFails.get(ip); if (arr) arr.push(Date.now()); else loginFails.set(ip, [Date.now()]); }
+  else if (!tok.lastUsedAt || Date.now() - tok.lastUsedAt > 10 * 6e4) { tok.lastUsedAt = Date.now(); saveConfig(cfg); }
+  return tok;
+}
+
 function mcpReply(res, status, obj, extra = {}) {
   const headers = { ...MCP_CORS, 'cache-control': 'no-store', ...extra };
   if (obj === undefined) { res.writeHead(status, headers); return res.end(); }
@@ -1185,13 +1195,10 @@ async function mcpRoute(req, res, u, ctx) {
   else {
     const ip = reqIp(req);
     if (rateLimited(ip)) return mcpReply(res, 429, { jsonrpc: '2.0', id: null, error: { code: -32001, message: 'too many bad tokens; wait 15 minutes' } });
-    const h = hmac(cfg.secret, `mcp.${raw}`);
-    const tok = raw ? (cfg.mcpTokens || []).find(t => safeEqual(t.hash, h)) : null;
+    const tok = mcpTokenFor(raw, ip);
     if (!tok) {
-      if (raw) { const arr = loginFails.get(ip); if (arr) arr.push(Date.now()); else loginFails.set(ip, [Date.now()]); }
       return mcpReply(res, 401, { jsonrpc: '2.0', id: null, error: { code: -32001, message: 'missing or wrong MCP token; create one on the PC with `preview mcp token <name>`' } }, { 'www-authenticate': 'Bearer realm="preview"' });
     }
-    if (!tok.lastUsedAt || Date.now() - tok.lastUsedAt > 10 * 6e4) { tok.lastUsedAt = Date.now(); saveConfig(cfg); }
     handler = mcpRemote.get(tok.name);
     if (!handler) {
       handler = createMcpServer({ call: rawCall, remote: true, by: tok.name, log: (...a) => log(`mcp ${tok.name}`, ...a) });
@@ -1239,15 +1246,20 @@ async function hubRoute(req, res, u, ctx) {
   }
   if (p === '/_hub/logout') return redirect(res, '/_hub/login', 302, { 'set-cookie': sessionCookie(ctx, '', 0) });
   if (p === '/_hub/mcp' || p.startsWith('/_hub/mcp/')) return mcpRoute(req, res, u, ctx);
-  if (!ctx.authed) {
-    if (p.startsWith('/_hub/api/')) return sendJson(res, 401, { error: 'log in first', login: '/_hub/login' });
-    return redirect(res, `/_hub/login?next=${encodeURIComponent(u.pathname + u.search)}`);
-  }
   const shot = p.match(/^\/_hub\/shot\/([\w-]+)\.jpg$/);
   if (shot) {
+    if (!ctx.authed) {
+      const ip = reqIp(req);
+      const raw = (String(req.headers.authorization || '').match(/^Bearer\s+(\S+)/i) || [])[1] || u.searchParams.get('key') || '';
+      if (!raw || rateLimited(ip) || !mcpTokenFor(raw, ip)) return send(res, 401, 'log in or pass an MCP token', { 'content-type': 'text/plain' });
+    }
     const f = shotFile(shot[1]);
     let st; try { st = fs.statSync(f); } catch { return send(res, 404, 'no screenshot'); }
     return sendFile(req, res, f, st, { 'cache-control': 'private, max-age=60' });
+  }
+  if (!ctx.authed) {
+    if (p.startsWith('/_hub/api/')) return sendJson(res, 401, { error: 'log in first', login: '/_hub/login' });
+    return redirect(res, `/_hub/login?next=${encodeURIComponent(u.pathname + u.search)}`);
   }
   if (p.startsWith('/_hub/api/')) {
     if (req.method !== 'GET' && !ctx.trusted && req.headers['x-hub'] !== '1') return sendJson(res, 403, { error: 'missing x-hub header' });
