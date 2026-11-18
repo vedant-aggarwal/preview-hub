@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f9fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1e21" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="noindex">
+<title>Previews</title>
+<link rel="icon" href="/_hub/ui/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,800&display=swap">
+<link rel="stylesheet" href="/_hub/ui/app.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-row">
+    <h1 class="plate">Previews</h1>
+    <div class="top-tools">
+      <span class="net" id="tunnel" role="status" title="Public link status">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z"/></svg>
+        <span>Checking</span>
+      </span>
+      <a class="icon-btn" href="/_hub/logout" title="Log out" aria-label="Log out">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/></svg>
+      </a>
+    </div>
+  </div>
+  <div class="board">
+    <span class="leds" id="leds" aria-hidden="true"></span>
+    <p class="counts" id="counts">Loading previews…</p>
+  </div>
+  <div class="alert" id="alert" role="alert" hidden></div>
+  <div class="filter" id="filterWrap" hidden>
+    <label class="search">
+      <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="filter" type="search" placeholder="Filter by name, id or path" autocomplete="off" aria-label="Filter previews">
+    </label>
+  </div>
+</header>
+
+<main>
+  <section id="liveSec" aria-labelledby="liveH">
+    <h2 class="sec" id="liveH">Running <span class="n" id="liveN"></span></h2>
+    <div class="rows" id="live">
+      <div class="row skel" aria-hidden="true"><span class="thumb"></span><div class="body"><span class="bar" style="width:58%"></span><span class="bar" style="width:36%"></span></div></div>
+      <div class="row skel" aria-hidden="true"><span class="thumb"></span><div class="body"><span class="bar" style="width:46%"></span><span class="bar" style="width:30%"></span></div></div>
+      <div class="row skel" aria-hidden="true"><span class="thumb"></span><div class="body"><span class="bar" style="width:52%"></span><span class="bar" style="width:40%"></span></div></div>
+    </div>
+  </section>
+  <section id="stoppedSec" aria-labelledby="stoppedH" hidden>
+    <h2 class="sec" id="stoppedH">Stopped <span class="n" id="stoppedN"></span></h2>
+    <div class="rows" id="stopped"></div>
+  </section>
+</main>
+
+<dialog id="editDlg" aria-labelledby="editH">
+  <form method="dialog" id="editForm">
+    <div class="dlg-head">
+      <h3 id="editH" tabindex="-1" autofocus>Edit preview</h3>
+      <p class="dlg-sub" id="editSub"></p>
+    </div>
+    <label class="field"><span class="lbl">Name</span><input name="name" required maxlength="80"></label>
+    <label class="field"><span class="lbl">Stops after</span>
+      <select name="ttl">
+        <option value="1h">1 hour</option><option value="4h">4 hours</option><option value="12h">12 hours</option>
+        <option value="1d">1 day</option><option value="3d">3 days</option><option value="7d">7 days</option>
+        <option value="30d">30 days</option><option value="never">Never</option>
+      </select>
+      <small>Counted from when you save.</small>
+    </label>
+    <label class="switch">
+      <span><b>Private</b><small>Viewers must log in with the passcode.</small></span>
+      <input type="checkbox" name="private" role="switch">
+    </label>
+    <label class="field" id="targetLbl"><span class="lbl">Target</span><input name="target" autocomplete="off" spellcheck="false" class="mono"></label>
+    <div id="procFields">
+      <label class="field"><span class="lbl">Start command</span><input name="cmd" autocomplete="off" spellcheck="false" placeholder="npm run dev" class="mono"></label>
+      <label class="field"><span class="lbl">Folder</span><input name="cwd" autocomplete="off" spellcheck="false" placeholder="C:\Users\…\project" class="mono"></label>
+      <label class="field" id="pcLbl" hidden><span class="lbl">Passcode</span><input name="passcode" type="password" autocomplete="current-password">
+        <small>Needed to change the command or folder from the web.</small></label>
+    </div>
+    <p class="err" id="editErr" role="alert" hidden></p>
+    <div class="dlg-actions">
+      <button value="cancel" class="btn ghost" formnovalidate>Cancel</button>
+      <button value="save" class="btn primary" id="editSave">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="logDlg" class="wide" aria-labelledby="logTitle">
+  <div class="log-head">
+    <h3 id="logTitle">Logs</h3>
+    <div class="log-tools"><button class="btn sm ghost" id="logRefresh">Refresh</button><button class="btn sm" id="logClose">Close</button></div>
+  </div>
+  <pre id="logBody">…</pre>
+</dialog>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="menu" id="menu" role="dialog" aria-label="Preview actions" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="/_hub/ui/app.js"></script>
+</body>
+</html>

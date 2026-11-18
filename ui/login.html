@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f7f9fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1e21" media="(prefers-color-scheme: dark)">
+<title>Log in to Previews</title>
+<link rel="icon" href="/_hub/ui/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,800&display=swap">
+<link rel="stylesheet" href="/_hub/ui/page.css">
+</head>
+<body class="msg">
+<main>
+  <img class="mark" src="/_hub/ui/favicon.svg" alt="" width="44" height="44">
+  <h1 class="plate">Previews</h1>
+  <p id="hint">Enter the passcode to see the previews on this PC.</p>
+  <form class="login" method="post" id="f">
+    <div class="pc-wrap">
+      <input id="pc" name="passcode" type="password" autocomplete="current-password" placeholder="Passcode" required autofocus
+        autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Passcode" aria-describedby="hint">
+      <button class="pc-eye" type="button" id="eye" aria-controls="pc" aria-pressed="false">Show</button>
+    </div>
+    <button class="btn primary" type="submit">Log in</button>
+  </form>
+</main>
+<script>
+  var q = new URLSearchParams(location.search);
+  document.getElementById('f').action = '/_hub/login?next=' + encodeURIComponent(q.get('next') || '/');
+  var h = document.getElementById('hint'), pc = document.getElementById('pc'), eye = document.getElementById('eye');
+  var nx = q.get('next') || '/';
+  if (nx !== '/' && nx.indexOf('/_hub/') !== 0) h.textContent = 'This preview is private. Enter the passcode to open it.';
+  if (q.get('e') === '1') { h.textContent = 'Wrong passcode. Try again.'; h.className = 'err'; pc.setAttribute('aria-invalid', 'true'); }
+  if (q.get('e') === 'limit') { h.textContent = 'Too many attempts. Wait 15 minutes.'; h.className = 'err'; }
+  eye.onclick = function () {
+    var show = pc.type === 'password';
+    pc.type = show ? 'text' : 'password';
+    eye.textContent = show ? 'Hide' : 'Show';
+    eye.setAttribute('aria-pressed', String(show));
+    pc.focus();
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+node_modules/
+scripts/launch.vbs
+*.log
+.DS_Store

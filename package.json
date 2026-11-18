@@ -1,0 +1,40 @@
+{
+  "name": "preview-hub",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Permanent public links for local dev servers, files and folders, with a dashboard, snapshots, expiry, an agent-friendly CLI and an MCP server.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vedant-aggarwal/preview-hub.git"
+  },
+  "keywords": [
+    "preview",
+    "tunnel",
+    "ngrok",
+    "cloudflare-tunnel",
+    "mcp",
+    "dev-server",
+    "share",
+    "ai-agents",
+    "claude-code",
+    "codex"
+  ],
+  "type": "module",
+  "bin": {
+    "preview": "bin/preview.js",
+    "preview-axi": "bin/preview.js",
+    "preview-mcp": "bin/preview-mcp.js"
+  },
+  "scripts": {
+    "hub": "node src/hub.js",
+    "mcp": "node bin/preview-mcp.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@toon-format/toon": "^2.3.1",
+    "axi-sdk-js": "^0.1.14"
+  }
+}
